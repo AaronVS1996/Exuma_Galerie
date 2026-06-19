@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import AuthSessionProvider from "@/components/session-provider";
 
 export const metadata: Metadata = {
   title: "Personal OS – Dein persönliches Management Tool",
@@ -11,6 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de">
       <body>
+        <AuthSessionProvider>
         {children}
         <Toaster
           position="bottom-right"
@@ -23,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             },
           }}
         />
+        </AuthSessionProvider>
       </body>
     </html>
   );
