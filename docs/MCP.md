@@ -52,10 +52,20 @@ Danach kannst du im Chat z. B. sagen: *„Zeig mir meine offenen Aufgaben"* oder
 
 ## 3. In ChatGPT verbinden
 
+ChatGPTs Connector-Formular bietet aktuell nur **OAuth**, **Keine
+Authentifizierung** oder **Gemischt** an — alle drei erwarten dabei
+OAuth-Endpunkte (Auth-URL/Token-URL), die dieser Server nicht hat. Deshalb hier
+den Token stattdessen **als Query-Parameter in der URL** übergeben:
+
 - ChatGPT (Plus/Pro/Team) → **Settings → Connectors / Developer Mode** →
-  *Add custom connector* (bzw. *Import*)
-  - URL: `https://<deine-domain>/api/mcp`
-  - Auth: Bearer-Token → deinen `MCP_TOKEN`
+  *Add custom connector*
+  - Verbindung: **Server URL**
+  - URL: `https://<deine-domain>/api/mcp?key=<dein MCP_TOKEN>`
+  - Authentifizierung: **Keine Authentifizierung**
+
+> Der Server akzeptiert den Token wahlweise per `Authorization: Bearer`-Header
+> (Claude) oder per `?key=`-Query-Parameter (ChatGPT) — beide prüfen gegen
+> denselben `MCP_TOKEN`.
 
 Beide Assistenten sprechen **denselben** Server – ein Token, eine URL.
 

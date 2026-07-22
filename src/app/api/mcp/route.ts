@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic";
 //
 // Verbinden:
 //   URL:   https://<deine-domain>/api/mcp
-//   Auth:  Bearer <MCP_TOKEN>
+//   Auth:  Bearer <MCP_TOKEN>  (Header)
+//   Oder:  https://<deine-domain>/api/mcp?key=<MCP_TOKEN>  (Query-Param, für
+//          Clients ohne Bearer-Token-Option, z. B. ChatGPT "Keine Authentifizierung")
 // Der Token wird über die Umgebungsvariable MCP_TOKEN gesetzt.
 
 const SERVER_INFO = { name: "personal-os", version: "1.0.0" };
@@ -30,20 +32,29 @@ function unauthorized() {
   );
 }
 
-function isAuthorized(req: NextRequest): boolean {
-  const expected = process.env.MCP_TOKEN;
-  if (!expected) return false; // Ohne konfigurierten Token bleibt der Server geschlossen.
-  const header = req.headers.get("authorization") || "";
-  const match = header.match(/^Bearer\s+(.+)$/i);
-  if (!match) return false;
-  // Längen-konstanter Vergleich um Timing-Angriffe zu vermeiden.
-  const provided = match[1];
+function safeEqual(provided: string, expected: string): boolean {
   if (provided.length !== expected.length) return false;
   let diff = 0;
   for (let i = 0; i < provided.length; i++) {
     diff |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
   }
   return diff === 0;
+}
+
+function isAuthorized(req: NextRequest): boolean {
+  const expected = process.env.MCP_TOKEN;
+  if (!expected) return false; // Ohne konfigurierten Token bleibt der Server geschlossen.
+
+  const header = req.headers.get("authorization") || "";
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (match && safeEqual(match[1], expected)) return true;
+
+  // Fallback für Clients ohne Bearer-Token-Unterstützung (z. B. ChatGPT
+  // "Keine Authentifizierung"): Token als Query-Parameter ?key=...
+  const queryToken = req.nextUrl.searchParams.get("key");
+  if (queryToken && safeEqual(queryToken, expected)) return true;
+
+  return false;
 }
 
 // JSON-RPC Hilfsfunktionen
